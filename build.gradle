@@ -11,6 +11,8 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation 'com.github.javaparser:javaparser-core:3.13.2'
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.13.2'
 }
 
 compileKotlin {

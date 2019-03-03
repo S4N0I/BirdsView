@@ -40,3 +40,4 @@ gradle-app.setting
 
 # Intellij
 .idea
+out
