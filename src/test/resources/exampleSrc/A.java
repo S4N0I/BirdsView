@@ -15,5 +15,6 @@ class A {
 
     static {
         new B().foo();
+        new B().foo();
     }
 }

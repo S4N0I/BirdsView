@@ -41,3 +41,6 @@ gradle-app.setting
 # Intellij
 .idea
 out
+
+# Output
+graph.json

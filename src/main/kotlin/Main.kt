@@ -9,11 +9,18 @@ import com.github.javaparser.symbolsolver.JavaSymbolSolver
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver
+import org.jgrapht.alg.scoring.PageRank
+import org.jgrapht.graph.DefaultDirectedGraph
 import java.io.File
 
 
-val javaTestCodeDir = "src/test/resources/exampleSrc"
+const val javaTestCodeDir = "src/test/resources/exampleSrc"
 val srcFiles = listOf("A.java", "B.java")
+
+// params
+const val ONLY_CONSIDER_CALLS_TO_OWN_SRC = true
+const val FILTER_LOOPS = true
+const val OUTPUT_FILE = "graph.json"
 
 fun main() {
 
@@ -27,23 +34,71 @@ fun main() {
     - persist / visualize graph
     */
 
-    val typeSolver = CombinedTypeSolver()
-    typeSolver.add(ReflectionTypeSolver())
-    typeSolver.add(JavaParserTypeSolver(javaTestCodeDir, ParserConfiguration()))
+    initParserAndSymbolSolver(rootSrcDir = javaTestCodeDir)
 
-    val symbolSolver = JavaSymbolSolver(typeSolver)
+    val graph = DefaultDirectedGraph<String, TypeEdge>(TypeEdge::class.java)
 
-    StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver)
-
-    srcFiles.stream()
-        .map { StaticJavaParser.parse(File(javaTestCodeDir, it)) }
+    srcFiles.map { StaticJavaParser.parse(File(javaTestCodeDir, it)) }
         .forEach { compilationUnit ->
             compilationUnit.findAll(MethodCallExpr::class.java).forEach { methodCallExpr ->
-                println("Method Call Expression: $methodCallExpr")
-                println("calling type: ${methodCallExpr.getEnclosingType().resolve().qualifiedName}")
-                println("called type: ${methodCallExpr.resolve().declaringType().qualifiedName}\n")
+                val callingType = methodCallExpr.getEnclosingType().resolve().qualifiedName
+                val calledType = methodCallExpr.resolve().declaringType().qualifiedName
+
+                val skipEdge = ONLY_CONSIDER_CALLS_TO_OWN_SRC && calledType.startsWith("java.")
+                            || FILTER_LOOPS && callingType == calledType
+                if(!skipEdge) {
+                    // processEdge(graph, callingType, calledType)
+                    processEdgeReversed(graph, callingType, calledType)
+                }
             }
         }
+
+    generateGraphJson(graph, PageRank(graph), File(OUTPUT_FILE))
+}
+
+fun processEdgeReversed(graph: DefaultDirectedGraph<String, TypeEdge>, callingType: String, calledType: String) {
+    processEdge(graph, calledType, callingType)
+}
+
+fun processEdge(graph: DefaultDirectedGraph<String, TypeEdge>, callingType: String, calledType: String) {
+    graph.addVertex(callingType)
+    graph.addVertex(calledType)
+    if(!graph.addEdge(callingType, calledType, TypeEdge())) {
+        graph.getEdge(callingType, calledType).count++
+    }
+}
+
+fun generateGraphJson(graph: DefaultDirectedGraph<String, TypeEdge>, pageRank: PageRank<String, TypeEdge>, outputFile: File) {
+    if(outputFile.exists()) {
+        outputFile.delete()
+    }
+    outputFile.createNewFile()
+    outputFile.outputStream().use {
+        val bufferedWriter = it.bufferedWriter(Charsets.UTF_8)
+        bufferedWriter.write("""
+            { "nodes": [
+        """.trimIndent())
+
+        // write all nodes
+        graph.vertexSet().forEachIndexed { index, node ->
+            bufferedWriter.write("""
+                ${if(index == 0) "" else ","}{"id":"$node","freq":${(pageRank.getVertexScore(node)*1000).toInt()}}
+            """.trimIndent())
+        }
+
+        bufferedWriter.write("""
+            ], "links": [
+        """.trimIndent())
+
+        // write all edges
+        graph.edgeSet().forEachIndexed { index, edge ->
+            bufferedWriter.write("""
+                ${if(index == 0) "" else ","}{"source":"${edge.source()}","target":"${edge.target()}","value":${edge.count}}
+            """.trimIndent())
+        }
+        bufferedWriter.write("]}")
+        bufferedWriter.flush()
+    }
 }
 
 fun MethodCallExpr.getEnclosingType(): ClassOrInterfaceDeclaration {
@@ -57,4 +112,15 @@ fun MethodCallExpr.getEnclosingType(): ClassOrInterfaceDeclaration {
         }
     }
     throw IllegalStateException("MethodCallExpr without enclosing ClassOrInterfaceDeclaration!")
+}
+
+
+fun initParserAndSymbolSolver(rootSrcDir: String) {
+    val typeSolver = CombinedTypeSolver()
+    typeSolver.add(ReflectionTypeSolver())
+    typeSolver.add(JavaParserTypeSolver(rootSrcDir, ParserConfiguration()))
+
+    val symbolSolver = JavaSymbolSolver(typeSolver)
+
+    StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver)
 }
