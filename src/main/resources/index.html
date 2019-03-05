@@ -10,12 +10,11 @@
 <link rel='stylesheet' href='d3v4-selectable-zoomable-force-directed-graph.css'>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://d3js.org/d3.v4.js"></script>
+<script src="graph.js"></script>
 <script src="d3v4-brush-lite.js"></script>
 <script src="d3v4-selectable-force-directed-graph.js"></script>
 
 <script>
     var svg = d3.select('#d3_selectable_force_directed_graph');
-    $.getJSON("../graph.json", function(graph) {
-        createV4SelectableForceDirectedGraph(svg, graph);
-    });
+    createV4SelectableForceDirectedGraph(svg, graph);
 </script>
