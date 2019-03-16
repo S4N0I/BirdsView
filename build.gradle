@@ -1,16 +1,31 @@
 plugins {
+    id 'java'
+    id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.3.11'
 }
 
 group 'mayer.jonas'
 version '0.1'
 
+configurations {
+    myConfiguration
+    myConfiguration.extendsFrom(implementation)
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'jonasmayer.birdview.MainKt'
+    }
+
+    from { configurations.myConfiguration.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation 'com.github.javaparser:javaparser-core:3.13.2'
     implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.13.2'
     implementation "org.jgrapht:jgrapht-core:1.3.0"
