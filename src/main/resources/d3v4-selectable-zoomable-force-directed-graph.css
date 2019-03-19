@@ -16,3 +16,9 @@
 .link {
   stroke: #999;
 }
+
+#editor {
+    position: relative;
+    width: 100%;
+    height: 20vh;
+}
