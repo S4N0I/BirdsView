@@ -8,7 +8,8 @@ import com.github.javaparser.symbolsolver.JavaSymbolSolver
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver
-import org.jgrapht.alg.scoring.*
+import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.mainBody
 import org.jgrapht.graph.DefaultDirectedGraph
 import java.io.File
 import java.awt.Desktop
@@ -16,7 +17,7 @@ import java.awt.Desktop
 
 const val testSrcDir = "src/test/resources/exampleSrc/"
 const val chessRepertoireDir = "/home/jonas/AndroidStudioProjects/ChessRepertoire/app/src/main/java"
-const val bluetoothChatDir = "/home/jonas/AndroidStudioProjects/BluetoothChat/Application/src/main/java/"
+const val bluetoothChatDir = "/home/jonas/AndroidStudioProjects/BluetoothChat/Application/src/main/java"
 
 val OUTPUT_DIR = "${System.getProperty("user.home")}/.BirdsView/"
 val resFiles = arrayOf("d3v4-brush-lite.js", "d3v4-selectable-force-directed-graph.js",
@@ -24,23 +25,15 @@ val resFiles = arrayOf("d3v4-brush-lite.js", "d3v4-selectable-force-directed-gra
 const val GRAPH_JSON = "graph.js"
 const val INDEX_HTML = "index.html"
 
-// params
-const val FILTER_LOOPS = true
-const val EDGES_POINT_TO_CALLED_TYPE = false
+fun main(args: Array<String>) = mainBody {
 
-fun main(args: Array<String>) {
+    val parsedArgs = ArgParser(args).parseInto(::Args)
 
     setupOutputDir(OUTPUT_DIR)
 
-    if(args.isEmpty()) {
-        println("Please specify a source code directory.")
-        return
-    }
-    val srcDir = args[0]
+    initParserAndSymbolSolver(parsedArgs.sourceDir)
 
-    initParserAndSymbolSolver(srcDir)
-
-    val srcFiles = findJavaFilesInDir(srcDir)
+    val srcFiles = findJavaFilesInDir(parsedArgs.sourceDir)
     val compilationUnits = srcFiles.map { StaticJavaParser.parse(it) }
 
     val graph = DefaultDirectedGraph<String, TypeEdge>(TypeEdge::class.java)
@@ -65,9 +58,9 @@ fun main(args: Array<String>) {
                     val calledType = methodCallExpr.resolve().declaringType().qualifiedName
 
                     val skipEdge = !graph.containsVertex(calledType) // Called type is not part of sources
-                            || FILTER_LOOPS && callingType == calledType
+                            || callingType == calledType
                     if(!skipEdge) {
-                        processNewMethodInvocation(graph, callingType, calledType, EDGES_POINT_TO_CALLED_TYPE)
+                        processNewMethodInvocation(graph, callingType, calledType, pointEdgeToCalledType = parsedArgs.reverseEdges)
                     }
                 } catch (e: Exception) {
                     /*
@@ -79,17 +72,10 @@ fun main(args: Array<String>) {
             }
         }
 
-    // scale for PageRank / Reverse PageRank: 1000
-    // scale for AlphaCentrality: 15
-    // scale for BetweennessCentrality: 15
-    // scale for ClosenessCentrality: 10
-    // scale for HarmonicCentrality: 400
-    // scale for ClusteringCoefficient: 400
-    // scale for Coreness: 5
+    val scoringAlgorithm = parsedArgs.vertexScoringAlgorithm.getAlgorithm(graph)
+    val scoreScale = parsedArgs.vertexScoreScale ?: scoringAlgorithm.getDefaultScoreScale()
 
-    val scoringAlgorithm = PageRank(graph)
-
-    generateGraphJson(graph, scoringAlgorithm, 1000, File(OUTPUT_DIR, GRAPH_JSON))
+    generateGraphJson(graph, scoringAlgorithm, scoreScale, File(OUTPUT_DIR, GRAPH_JSON))
     openVisualizationInBrowser(OUTPUT_DIR + INDEX_HTML)
 }
 
