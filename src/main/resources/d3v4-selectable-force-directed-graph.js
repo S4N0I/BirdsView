@@ -259,16 +259,5 @@ function createV4SelectableForceDirectedGraph(svg, graph) {
         })
     }
 
-    var texts = ['Use the scroll wheel to zoom',
-                 'Hold the shift key to select nodes']
-
-    svg.selectAll('text')
-        .data(texts)
-        .enter()
-        .append('text')
-        .attr('x', 40)
-        .attr('y', function(d,i) { return svg.attr('y') + parentHeight - 100 + i * 18; })
-        .text(function(d) { return d; });
-
     return graph;
 };
