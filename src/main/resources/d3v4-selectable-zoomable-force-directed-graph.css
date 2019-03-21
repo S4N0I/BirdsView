@@ -1,5 +1,6 @@
 body {
     overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 #d3_selectable_force_directed_graph .node {
@@ -18,11 +19,7 @@ body {
 #editor {
     position: relative;
     height: 100vh;
-}
-
-#modal-button {
-    margin-top: 40px;
-    margin-left: 40px;
+    font-size: 1.2em;
 }
 
 .bottom-sheet {
@@ -31,7 +28,11 @@ body {
 
 .bottom-sheet .modal.content {
     width: 60%;
-    margin: 0px auto
+    margin: 0px auto;
+}
+
+#modalContent {
+    padding: 0px;
 }
 
 #container {
@@ -50,6 +51,18 @@ body {
 #modal-button {
     float: left;
     z-index: 10;
+    margin-top: 40px;
+    margin-left: 40px;
+}
+
+#runButton {
+    background: #7CFC00;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#closeButton {
+    background: #778899;
 }
 
 .help-tip {

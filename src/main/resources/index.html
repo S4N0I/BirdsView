@@ -20,7 +20,8 @@
     <!-- Modal Trigger -->
     <a id="modal-button" class="waves-effect waves-light btn" href="#bottom_sheet">Hack it!</a>
     <div class="help-tip">
-        <p>Click on a node and pull to see what's attached to it.<br> Use SHIFT for selecting multiple nodes. Scroll to zoom in and out.</p>
+        <p>Click on a node and pull to see what's attached to it.<br> Use SHIFT for selecting multiple nodes. Scroll to
+            zoom in and out.</p>
     </div>
     <div align='center' id="d3_selectable_force_directed_graph">
         <svg/>
@@ -29,33 +30,64 @@
 
 <!-- Modal Structure -->
 <div id="bottom_sheet" class="modal bottom-sheet modal-fixed-footer">
-    <div class="modal-content">
-        <div id="editor">function foo(items) {
-            var x = "All this is syntax highlighted";
-            return x;
-            }
-        </div>
+    <div id="modalContent" class="modal-content">
+        <div id="editor">/* From here you can transform the graph at will, play with colors or break the entire page.
+The graph object looks like this:
+
+var graph = {
+    nodes: [
+        {id: "packagename.ClassName1", score: 42},
+        {id: "packagename.ClassName2", score: 24, color: "#08ac9c"},  // the color property is optional
+        ...
+    ],
+    links: [
+        {source: "packagename.ClassName1", target: "packagename.ClassName2", value: 1},
+        ...
+    ]
+}
+
+The following code paints all nodes which contain the string "red" red:
+*/
+
+graph.nodes.forEach(function(node) {
+    if(node.id.includes("red")) {
+        node.color = "#f92222"
+    }
+})
+</div>
     </div>
     <div class="modal-footer">
-        <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
+        <a id="runButton" class="waves-effect modal-close waves-green btn-flat">Run!</a>
+        <a id="closeButton" class="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
     </div>
 </div>
 
 <script>
     $('.modal').modal({
-      dismissible: true,
-      opacity: .5,
-      inDuration: 300,
-      outDuration: 200,
-      startingTop: '4%',
-      endingTop: '10%',
-      ready: function(modal, trigger) { // Callback for Modal open.
-        console.log(modal, trigger);
-      },
-      complete: function() { // Callback for Modal close.
-      } // Callback for Modal close
-    }
-  );
+            dismissible: true,
+            opacity: .5,
+            inDuration: 300,
+            outDuration: 200,
+            startingTop: '4%',
+            endingTop: '10%'
+        }
+    );
+</script>
+
+<script>
+    $('#runButton').on('click', function () {
+        var editor = ace.edit("editor")
+        var userCode = editor.getValue();
+        var script = document.createElement('script');
+        try {
+            script.appendChild(document.createTextNode(userCode));
+            document.body.appendChild(script);
+        } catch (e) {
+            script.text = userCode;
+            document.body.appendChild(script);
+        }
+        createV4SelectableForceDirectedGraph(svg, graph);
+    });
 </script>
 
 <script>
