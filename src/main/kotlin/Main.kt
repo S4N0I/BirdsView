@@ -15,10 +15,6 @@ import java.io.File
 import java.awt.Desktop
 
 
-const val testSrcDir = "src/test/resources/exampleSrc/"
-const val chessRepertoireDir = "/home/jonas/AndroidStudioProjects/ChessRepertoire/app/src/main/java"
-const val bluetoothChatDir = "/home/jonas/AndroidStudioProjects/BluetoothChat/Application/src/main/java"
-const val spimOfficeDir = "/home/jonas/IdeaProjects/BirdsView/src/main/kotlin/Main.kt"
 
 val OUTPUT_DIR = "${System.getProperty("user.home")}/.BirdsView/"
 val resFiles = arrayOf("d3v4-brush-lite.js", "d3v4-selectable-force-directed-graph.js",
