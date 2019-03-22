@@ -16,7 +16,7 @@ On top of that, **you can hack the generated graph visualization** with an embed
 ## Installation and Usage (Unix)
 prerequisites: Java 8+, a web browser
 
-- **Step 1:** Download the jar
+- **Step 1:** [Download the jar](https://github.com/S4N0I/BirdsView/raw/master/BirdsView-1.0.jar)
 - **Step 2:** Run the jar:
 ```bash
 java -jar BirdsView-1.0.jar PATH_TO_YOUR_SRC
