@@ -44,3 +44,6 @@ out
 
 # Output
 graph.json
+
+# Don't ignore jar
+!BirdsView-1.0.jar
