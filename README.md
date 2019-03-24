@@ -1,4 +1,7 @@
-## About BirdsView
+# BirdsView
+![](https://github.com/S4N0I/BirdsView/raw/master/birdsview.gif)
+
+## About
 **BirdsView is a tool to visualize the structure of Java projects.**
 
 It takes source code and builds a graph of classes and interaces based on method invocations.
